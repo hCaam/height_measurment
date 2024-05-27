@@ -3,6 +3,7 @@ const mqtt = require('mqtt');
 const http = require('http');
 const path = require('path');
 var mysql = require('mysql2');
+const cron = require('node-cron');
 
 const app = express();
 const server = http.createServer(app);
@@ -41,20 +42,35 @@ app.get('/api/users', (req, res) => {
   });
 });
 
+let dailyData = [];
 mqttClient.on('message', (topic, message) => {
   const data = String.fromCharCode.apply(null, message);
 
-  const timestamp = new Date();
-  const query = 'INSERT INTO water_height (data, timestamp) VALUES (?, ?)';
-  db.query(query, [data, timestamp], (err, results) => {
-    if (err) {
-      console.error('Error inserting data into MySQL:', err);
-    } else {
-      console.log('Data inserted into MySQL:', results);
-    }
-  });
+  if (!isNaN(data)) {
+    dailyData.push(data); // Store the data in the array
+  }
 
   io.emit('mqttData', data);
+});
+
+cron.schedule('0 0 * * *', () => { // This cron job runs every day at midnight
+  if (dailyData.length > 0) {
+    const sum = dailyData.reduce((a, b) => a + b, 0);
+    const average = sum / dailyData.length;
+    const timestamp = new Date();
+    const query = 'INSERT INTO water_height (data, timestamp) VALUES (?, ?)';
+
+    db.query(query, [average, timestamp], (err, results) => {
+      if (err) {
+        console.error('Error inserting data into MySQL:', err);
+      } else {
+        console.log('Average data inserted into MySQL:', results);
+      }
+    });
+
+    // Clear the dailyData array for the next day
+    dailyData = [];
+  }
 });
 
 mqttClient.on('connect', () => {
