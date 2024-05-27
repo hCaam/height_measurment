@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Height Monitor</title>
+  <script src="https://cdn.socket.io/4.1.3/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .mqttChart {
+      margin-left: 10em;
+      margin-right: 10em;
+    }
+    .para {
+      margin-left: 20em;
+      margin-right: 20em;
+    }
+    .title {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="title">Bendungan Sutami Pengukur Ketinggian Realtime </h1>
+
+  <div class="container">
+    <!-- Photo of the dam -->
+    <img src="https://via.placeholder.com/600x400" alt="Dam Photo" width="600" height="400">
+
+    <!-- Paragraph about the dam -->
+    <p class="para">
+      Bendungan Sutami atau disebut juga Bendungan Karangkates, adalah sebuah bendungan yang dibangun di Sumberpucung, Malang untuk membendung Sungai Brantas. Nama bendungan ini diambil dari nama Menteri Pekerjaan Umum yang menjabat mulai tahun 1966 hingga 1978 dengan nama yang sama.
+      Bendungan ini dikelola oleh Jasa Tirta I, sementara PLTA yang memanfaatkan air yang terbendung oleh bendungan ini dikelola oleh PLN Nusantara Power Unit Pembangkitan Brantas.
+      Akibat terjadinya sedimentasi, pada tahun 2014, total kapasitas dari waduk yang terbentuk akibat dibangunnya bendungan ini diperkirakan tinggal 158,5 juta meter kubik, dengan kapasitas aktif sebesar 135,4 juta meter kubik dan kapasitas nonaktif sebesar 23,1 juta meter kubik    
+    </p>
+    <!-- Chart displaying water height data -->
+    <canvas id="mqttChart" class="mqttChart" height="200"></canvas>
+
+    <table id="userTable">
+      <thead>
+          <tr>
+              <th>Height</th>
+              <th>Time</th>
+          </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Row 1 Data 1</td>
+          <td>Row 1 Data 2</td>
+      </tr>
+      <tr>
+          <td>Row 2 Data 1</td>
+          <td>Row 2 Data 2</td>
+      </tr>
+      </tbody>
+    </table>
+
+    <!-- Embedded Google Map -->
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15797.510007211318!2d112.46057756820562!3d-8.164668506539934!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e78984055555555%3A0xf2bae052ef2aabbe!2sWaduk%20Karangkates!5e0!3m2!1sen!2sid!4v1716512978370!5m2!1sen!2sid"
+      width="600"
+      height="450"
+      style="border:0;"
+      allowfullscreen=""
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+    ></iframe>
+  </div>
+
+  <script>
+    const socket = io();
+
+    const ctx = document.getElementById('mqttChart').getContext('2d');
+    const mqttChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Realtime Water Level Height',
+          borderColor: 'rgb(75, 192, 192)',
+          data: [],
+        }],
+        scales: {
+          x: {
+            min: 0,
+            max: 50,
+          }},
+      },
+    });
+
+    socket.on('mqttData', (data) => {
+      const time = new Date().toLocaleTimeString();
+      mqttChart.data.labels.push(time);
+      console.log(data);
+      mqttChart.data.datasets[0].data.push(data);
+      mqttChart.update();
+    });
+  </script>
+</body>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('/api/users')
+    .then(response => response.json())
+    .then(users => {
+      const tableBody = document.querySelector('#userTable tbody');
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+        <td>${user.height}</td>
+        <td>${user.time}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    })
+  .catch(error => console.error('Error fetching data:', error));
+});
+</script>
+</html>
