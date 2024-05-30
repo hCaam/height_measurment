@@ -33,7 +33,7 @@ db.connect(err => {
 });
 
 app.get('/api/users', (req, res) => {
-  db.query('SELECT * FROM users', (err, results) => {
+  db.query('SELECT * FROM water_height', (err, results) => {
       if (err) {
           console.error('Error fetching data:', err);
           return res.status(500).send('Server Error');

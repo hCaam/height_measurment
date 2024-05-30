@@ -86,30 +86,40 @@
     const socket = io();
 
     const ctx = document.getElementById('mqttChart').getContext('2d');
-    const mqttChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Realtime Water Level Height',
-          borderColor: 'rgb(75, 192, 192)',
-          data: [],
-        }],
-        scales: {
-          x: {
-            min: 0,
-            max: 50,
-          }},
-      },
-    });
+const mqttChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Realtime Water Level Height',
+      borderColor: 'rgb(75, 192, 192)',
+      data: [],
+    }]
+  },
+  options: {
+    scales: {
+      x: {
+        min: 0,
+        max: 20
+      }
+    }
+  }
+});
 
-    socket.on('mqttData', (data) => {
-      const time = new Date().toLocaleTimeString();
-      mqttChart.data.labels.push(time);
-      console.log(data);
-      mqttChart.data.datasets[0].data.push(data);
-      mqttChart.update();
-    });
+socket.on('mqttData', (data) => {
+  const time = new Date().toLocaleTimeString();
+  mqttChart.data.labels.push(time);
+  mqttChart.data.datasets[0].data.push(data);
+
+  // Ensure only the latest 10 data points are displayed
+  if (mqttChart.data.labels.length > 10) {
+    mqttChart.data.labels.shift();
+    mqttChart.data.datasets[0].data.shift();
+  }
+
+  mqttChart.update();
+});
+
   </script>
 </body>
 <script>
