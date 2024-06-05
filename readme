@@ -1,0 +1,6 @@
+sudo yum install git docker -y && \
+git clone https://github.com/hCaam/height_measurment.git && \
+cd height_measurment && \
+sudo systemctl start docker && \
+sudo docker build -t height . && \
+docker run -p 80:3000 height
