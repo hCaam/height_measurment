@@ -16,10 +16,10 @@ const mqttOptions = {
 };
 
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'your-username',
-  password: 'your-password',
-  database: 'your_database'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 const mqttClient = mqtt.connect('mqtts://34e4af2c39f947029e4d6ac853af4421.s2.eu.hivemq.cloud:8883/', mqttOptions);
