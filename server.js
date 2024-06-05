@@ -24,6 +24,33 @@ const db = mysql.createConnection({
 
 const mqttClient = mqtt.connect('mqtts://34e4af2c39f947029e4d6ac853af4421.s2.eu.hivemq.cloud:8883/', mqttOptions);
 
+//Dummy data
+const generateRandomData = (min, max) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+// Function to insert dummy data
+const insertDummyData = () => {
+  const dataPoints = 7; // Number of days
+  const query = 'INSERT INTO water_height (data, timestamp) VALUES (?, ?)';
+  const today = new Date();
+
+  for (let i = 0; i <= dataPoints; i++) {
+    const data = generateRandomData(5000, 9000);
+    const timestamp = new Date(today);
+    timestamp.setDate(today.getDate() - i);
+
+    db.query(query, [data, timestamp], (err, results) => {
+      if (err) {
+        console.error('Error inserting dummy data into MySQL:', err);
+      } else {
+        console.log(`Dummy data inserted for ${timestamp.toISOString()}:`, results);
+      }
+    });
+  }
+};
+
+
 db.connect(err => {
   if (err) {
     console.error('Error connecting to MySQL:', err);
@@ -46,6 +73,7 @@ db.connect(err => {
     }
     console.log('Table created or already exists:', results);
   });
+  insertDummyData();
 });
 
 app.get('/api/users', (req, res) => {
