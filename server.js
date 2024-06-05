@@ -30,6 +30,22 @@ db.connect(err => {
     return;
   }
   console.log('Connected to MySQL');
+
+  const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS water_height (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      data FLOAT NOT NULL,
+      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  db.query(createTableQuery, (err, results) => {
+    if (err) {
+      console.error('Error creating table:', err);
+      return;
+    }
+    console.log('Table created or already exists:', results);
+  });
 });
 
 app.get('/api/users', (req, res) => {
