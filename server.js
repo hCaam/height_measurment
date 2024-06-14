@@ -37,7 +37,7 @@ const insertDummyData = () => {
   const today = new Date();
 
   for (let i = 0; i <= dataPoints; i++) {
-    const data = generateRandomData(5000, 9000);
+    const data = generateRandomData(500, 900);
     const timestamp = new Date(today);
     timestamp.setDate(today.getDate() - i);
 
