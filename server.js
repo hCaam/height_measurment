@@ -59,23 +59,36 @@ db.connect(err => {
   }
   console.log('Connected to MySQL');
 
-  const createTableQuery = `
-    CREATE TABLE IF NOT EXISTS water_height (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      data FLOAT NOT NULL,
-      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
+  const checkTableQuery = `SHOW TABLES LIKE 'water_height'`;
 
-  db.query(createTableQuery, (err, results) => {
+  db.query(checkTableQuery, (err, results) => {
     if (err) {
-      console.error('Error creating table:', err);
+      console.error('Error checking for table:', err);
       return;
     }
-    console.log('Table created or already exists:', results);
+
+    if (results.length === 0) {
+      // Tabel water_height belum ada, buat tabel terlebih dahulu
+      const createTableQuery = `
+        CREATE TABLE water_height (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          data FLOAT NOT NULL,
+          timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
+
+      db.query(createTableQuery, (err, results) => {
+        if (err) {
+          console.error('Error creating table:', err);
+          return;
+        }
+        console.log('Table created:', results);
+        insertDummyData(); // Setelah membuat tabel, baru masukkan dummy data
+      });
+    }
   });
-  insertDummyData();
 });
+
 
 app.get('/api/users', (req, res) => {
   db.query('SELECT * FROM water_height', (err, results) => {

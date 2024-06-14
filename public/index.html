@@ -125,10 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(users => {
       const tableBody = document.querySelector('#userTable tbody');
       users.forEach(user => {
+        const date = new Date(user.timestamp);
+        const formattedDate = date.toISOString().split('T')[0];
         const row = document.createElement('tr');
         row.innerHTML = `
-        <td>${user.height}</td>
-        <td>${user.time}</td>
+        <td>${user.data}</td>
+        <td>${formattedDate}</td>
         `;
         tableBody.appendChild(row);
       });
